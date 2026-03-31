@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>국토대장정 트래커</title>
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --bg: #f8fafc;
+            --sidebar-bg: #1e293b;
+            --border: #e2e8f0;
+            --white: #ffffff;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Pretendard', sans-serif; margin: 0; background: var(--bg); color: #1e293b; }
+
+        /* 사이드바 스타일 */
+        #sidebar {
+            position: fixed;
+            left: -280px;
+            top: 0;
+            width: 280px;
+            height: 100%;
+            background: var(--sidebar-bg);
+            color: white;
+            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+        }
+        #sidebar.active { left: 0; }
+        
+        .sidebar-header { padding: 25px 20px 15px; font-size: 1.2rem; font-weight: 700; color: #f1f5f9; }
+        
+        .new-post-btn {
+            margin: 10px 20px;
+            padding: 12px;
+            background: var(--primary);
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .divider {
+            height: 1px;
+            background: #334155;
+            margin: 15px 20px;
+        }
+
+        .menu-list { overflow-y: auto; flex: 1; padding: 0 10px 20px; }
+        .menu-item {
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            display: flex;
+            justify-content: space-between;
+        }
+        .menu-item:active { background: #334155; }
+        .menu-item span { color: #94a3b8; font-size: 0.8rem; }
+
+        /* 메인 레이아웃 */
+        header {
+            position: fixed;
+            top: 0; width: 100%; height: 60px;
+            background: var(--white);
+            display: flex; align-items: center;
+            padding: 0 15px; z-index: 999;
+            border-bottom: 1px solid var(--border);
+        }
+        .menu-toggle { font-size: 24px; cursor: pointer; padding: 10px; }
+        
+        main { padding: 80px 15px 30px; max-width: 500px; margin: 0 auto; }
+
+        /* 입력 폼 카드 */
+        .card {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+        }
+        
+        .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .full-width { grid-column: span 2; }
+        
+        label { display: block; font-size: 0.75rem; color: #64748b; margin-bottom: 4px; margin-left: 4px; }
+        input, textarea {
+            width: 100%; padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 10px; font-size: 16px;
+            background: #fdfdfd;
+        }
+        textarea { height: 100px; resize: none; }
+
+        .btn-submit {
+            background: var(--primary); color: white;
+            border: none; width: 100%; padding: 16px;
+            border-radius: 12px; font-weight: 700; font-size: 1rem;
+        }
+
+        /* 로그 리스트 스타일 */
+        .log-entry {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 18px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border);
+        }
+        .log-day-tag {
+            display: inline-block;
+            background: #eff6ff; color: var(--primary);
+            padding: 4px 10px; border-radius: 6px;
+            font-size: 0.8rem; font-weight: 700; margin-bottom: 10px;
+        }
+        .route-info { font-weight: 600; margin-bottom: 10px; font-size: 1rem; }
+        .route-info span { color: var(--primary); margin: 0 5px; }
+        
+        .meta-grid {
+            display: grid; grid-template-columns: 1fr 1fr 1fr;
+            font-size: 0.8rem; color: #64748b;
+            background: #f8fafc; padding: 10px; border-radius: 8px;
+        }
+
+        #overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.4); z-index: 998; backdrop-filter: blur(2px);
+        }
+        #overlay.active { display: block; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="menu-toggle" onclick="toggleMenu()">☰</div>
+    <div style="font-weight: 700; margin-left: 5px;">국토대장정 기록</div>
+</header>
+
+<nav id="sidebar">
+    <div class="sidebar-header">여정 목록</div>
+    <div class="new-post-btn" onclick="initForm()">+ 새 기록 작성</div>
+    <div class="divider"></div>
+    <div id="menuList" class="menu-list">
+        </div>
+</nav>
+
+<div id="overlay" onclick="toggleMenu()"></div>
+
+<main>
+    <div class="card">
+        <div class="input-grid">
+            <div class="full-width">
+                <label>일차</label>
+                <input type="number" id="day" placeholder="예: 1">
+            </div>
+            <div>
+                <label>출발지</label>
+                <input type="text" id="startPos" placeholder="출발 장소">
+            </div>
+            <div>
+                <label>도착지</label>
+                <input type="text" id="endPos" placeholder="도착 장소">
+            </div>
+            <div>
+                <label>이동 거리(km)</label>
+                <input type="number" id="distance" placeholder="0.0">
+            </div>
+            <div>
+                <label>걸음 수</label>
+                <input type="number" id="steps" placeholder="0">
+            </div>
+            <div class="full-width">
+                <label>오늘 사용한 비용(원)</label>
+                <input type="number" id="cost" placeholder="0">
+            </div>
+            <div class="full-width">
+                <label>상세 메모</label>
+                <textarea id="memo" placeholder="오늘 어떤 일이 있었나요?"></textarea>
+            </div>
+        </div>
+        <button class="btn-submit" onclick="saveData()">여정 기록하기</button>
+    </div>
+
+    <div id="mainTimeline"></div>
+</main>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    // Firebase 설정 (본인의 정보로 교체하세요)
+    const firebaseConfig = {
+        apiKey: "AIzaSyBQaElZXd6gm2wyxTCRg2UMVyntRZAJCNI",
+        authDomain: "ktrek-a1779.firebaseapp.com",
+        databaseURL: "https://ktrek-a1779-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "ktrek-a1779",
+        storageBucket: "ktrek-a1779.firebasestorage.app",
+        messagingSenderId: "935801480500",
+        appId: "1:935801480500:web:3af4137193b9df9a71f161"
+  	measurementId: "G-F9WGTJ04SW"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const logsRef = ref(db, 'trekking_logs');
+
+    window.toggleMenu = () => {
+        document.getElementById('sidebar').classList.toggle('active');
+        document.getElementById('overlay').classList.toggle('active');
+    };
+
+    window.initForm = () => {
+        document.querySelectorAll('input, textarea').forEach(el => el.value = "");
+        toggleMenu();
+        window.scrollTo({top: 0, behavior: 'smooth'});
+    };
+
+    window.saveData = () => {
+        const payload = {
+            day: document.getElementById('day').value,
+            startPos: document.getElementById('startPos').value,
+            endPos: document.getElementById('endPos').value,
+            distance: document.getElementById('distance').value,
+            steps: document.getElementById('steps').value,
+            cost: document.getElementById('cost').value,
+            memo: document.getElementById('memo').value,
+            createdAt: Date.now()
+        };
+
+        if(!payload.day || !payload.memo) return alert("일차와 메모를 입력해주세요!");
+
+        push(logsRef, payload).then(() => {
+            alert("기록 완료!");
+            document.querySelectorAll('input, textarea').forEach(el => el.value = "");
+        });
+    };
+
+    // 실시간 동기화 (리스트 + 사이드바 메뉴)
+    onValue(logsRef, (snapshot) => {
+        const timeline = document.getElementById('mainTimeline');
+        const menuList = document.getElementById('menuList');
+        timeline.innerHTML = "";
+        menuList.innerHTML = "";
+        
+        const data = snapshot.val();
+        if (data) {
+            // 일차 역순 정렬
+            const sorted = Object.entries(data).sort((a, b) => b[1].day - a[1].day);
+            
+            sorted.forEach(([key, val]) => {
+                // 1. 메인 타임라인 카드 생성
+                const entry = document.createElement('div');
+                entry.className = 'log-entry';
+                entry.innerHTML = `
+                    <div class="log-day-tag">DAY ${val.day}</div>
+                    <div class="route-info">${val.startPos || '미정'} <span>→</span> ${val.endPos || '미정'}</div>
+                    <div class="meta-grid">
+                        <div>📏 ${val.distance}km</div>
+                        <div>👣 ${Number(val.steps).toLocaleString()}보</div>
+                        <div>💰 ${Number(val.cost).toLocaleString()}원</div>
+                    </div>
+                    <p style="line-height:1.6; font-size:0.95rem; margin-top:15px; white-space:pre-wrap;">${val.memo}</p>
+                    <div style="text-align:right; margin-top:10px">
+                        <span style="color:#ef4444; font-size:12px;" onclick="deleteLog('${key}')">삭제</span>
+                    </div>
+                `;
+                timeline.appendChild(entry);
+
+                // 2. 사이드바 메뉴 아이템 생성
+                const menuItem = document.createElement('div');
+                menuItem.className = 'menu-item';
+                menuItem.innerHTML = `Day ${val.day} <span>${val.endPos || ''}</span>`;
+                menuItem.onclick = () => {
+                    // 클릭 시 해당 내용으로 폼 채우기 (수정용이나 확인용)
+                    document.getElementById('day').value = val.day;
+                    document.getElementById('startPos').value = val.startPos;
+                    document.getElementById('endPos').value = val.endPos;
+                    document.getElementById('distance').value = val.distance;
+                    document.getElementById('steps').value = val.steps;
+                    document.getElementById('cost').value = val.cost;
+                    document.getElementById('memo').value = val.memo;
+                    toggleMenu();
+                    window.scrollTo({top: 0, behavior: 'smooth'});
+                };
+                menuList.appendChild(menuItem);
+            });
+        }
+    });
+
+    window.deleteLog = (key) => {
+        if(confirm("기록을 영구 삭제할까요?")) remove(ref(db, `trekking_logs/${key}`));
+    };
+</script>
+
+</body>
+</html>
