@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>국토대장정 개인 로그</title>
+    <title>국토대장정 트래커</title>
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -12,110 +12,137 @@
             --sidebar-bg: #1e293b;
             --border: #e2e8f0;
             --white: #ffffff;
-            --sidebar-width: 320px;
+            --sidebar-width: 300px;
+            --header-height: 60px;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Pretendard', sans-serif; margin: 0; background: var(--bg); color: #1e293b; height: 100vh; display: flex; }
+        body { 
+            font-family: 'Pretendard', sans-serif; 
+            margin: 0; 
+            background: var(--bg); 
+            color: #1e293b; 
+            height: 100vh; 
+            display: flex;
+            overflow: hidden;
+        }
 
-        /* 사이드바 기본 (PC형) */
+        /* 사이드바 설정 */
         #sidebar {
             position: fixed; left: 0; top: 0; width: var(--sidebar-width); height: 100%;
-            background: var(--sidebar-bg); color: white; z-index: 1000;
-            display: flex; flex-direction: column; transition: 0.3s;
+            background: var(--sidebar-bg); color: white; z-index: 1001;
+            display: flex; flex-direction: column; transition: transform 0.3s ease;
         }
+        
         .sidebar-header { padding: 25px 20px 10px; font-weight: 700; font-size: 1.1rem; }
-        .new-btn { margin: 10px 20px; padding: 12px; background: var(--primary); border-radius: 10px; text-align: center; font-weight: 600; cursor: pointer; }
+        .new-btn { margin: 10px 20px; padding: 14px; background: var(--primary); border-radius: 12px; text-align: center; font-weight: 600; cursor: pointer; border: none; color: white; font-size: 1rem; }
         .divider { height: 1px; background: #334155; margin: 15px 20px; }
         .menu-list { overflow-y: auto; flex: 1; padding: 0 15px 20px; }
         
-        /* 메뉴 아이템 상세화 */
+        /* 메뉴 아이템 스타일 */
         .menu-item { 
-            padding: 15px; border-radius: 12px; margin-bottom: 8px; cursor: pointer; 
-            background: rgba(255,255,255,0.05); transition: 0.2s;
+            padding: 15px; border-radius: 12px; margin-bottom: 10px; cursor: pointer; 
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
         }
-        .menu-item:active, .menu-item:hover { background: rgba(255,255,255,0.15); }
-        .menu-item .day-text { font-weight: 700; color: var(--primary); font-size: 0.85rem; margin-bottom: 4px; }
-        .menu-item .route-text { font-size: 0.95rem; font-weight: 500; margin-bottom: 4px; }
+        .menu-item:active { background: rgba(255,255,255,0.15); }
+        .menu-item .day-text { font-weight: 700; color: #60a5fa; font-size: 0.85rem; margin-bottom: 4px; }
+        .menu-item .route-text { font-size: 0.95rem; font-weight: 500; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .menu-item .dist-text { font-size: 0.8rem; color: #94a3b8; }
 
-        /* 메인 컨텐츠 (PC형) */
-        header {
-            position: fixed; top: 0; left: var(--sidebar-width); right: 0; height: 60px;
-            background: var(--white); display: flex; align-items: center;
-            padding: 0 20px; z-index: 999; border-bottom: 1px solid var(--border);
+        /* 메인 영역 및 헤더 */
+        .main-wrapper {
+            flex: 1; display: flex; flex-direction: column;
+            margin-left: var(--sidebar-width); width: calc(100% - var(--sidebar-width));
+            height: 100vh; transition: margin 0.3s ease;
         }
-        .menu-toggle { display: none; font-size: 24px; cursor: pointer; padding: 10px; margin-right: 10px; }
+
+        header {
+            height: var(--header-height); background: var(--white);
+            display: flex; align-items: center; padding: 0 20px;
+            border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 1000;
+        }
+
+        .menu-toggle {
+            display: none; font-size: 24px; cursor: pointer; 
+            width: 44px; height: 44px; line-height: 44px; text-align: center;
+            margin-right: 10px; border-radius: 8px; background: #f1f5f9;
+        }
 
         main { 
-            margin-left: var(--sidebar-width); padding: 90px 20px 40px; 
-            width: 100%; max-width: 900px; margin-right: auto;
+            flex: 1; overflow-y: auto; padding: 20px; 
+            width: 100%; max-width: 700px; margin: 0 auto;
         }
 
         /* 모바일 대응 (767px 이하) */
         @media (max-width: 767px) {
-            #sidebar { left: -var(--sidebar-width); }
-            #sidebar.active { left: 0; }
-            header { left: 0; }
+            #sidebar { transform: translateX(-100%); }
+            #sidebar.active { transform: translateX(0); }
+            .main-wrapper { margin-left: 0; width: 100%; }
             .menu-toggle { display: block; }
-            main { margin-left: 0; padding: 80px 15px 30px; }
             #overlay.active { display: block; }
+            main { padding: 15px; }
         }
 
-        .card { background: var(--white); border-radius: 20px; padding: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        h2 { margin-top: 0; font-size: 1.25rem; color: var(--primary); margin-bottom: 20px; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; }
+        .card { background: var(--white); border-radius: 24px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+        h2 { margin: 0 0 20px 0; font-size: 1.3rem; color: var(--primary); font-weight: 700; }
 
-        /* 폼 스타일 */
-        .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        /* 입력 폼 그리드 */
+        .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .full { grid-column: span 2; }
-        label { display: block; font-size: 0.75rem; color: #64748b; margin: 0 0 4px 4px; }
-        input, textarea { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 12px; font-size: 16px; background: #fdfdfd; }
-        textarea { height: 150px; resize: none; }
-        .btn-main { background: var(--primary); color: white; border: none; width: 100%; padding: 16px; border-radius: 14px; font-weight: 700; font-size: 1rem; margin-top: 20px; cursor: pointer; }
-        .btn-delete { background: #fee2e2; color: #ef4444; border: none; width: 100%; padding: 12px; border-radius: 12px; margin-top: 15px; font-weight: 600; display: none; cursor: pointer; }
+        label { display: block; font-size: 0.8rem; color: #64748b; margin: 0 0 6px 4px; font-weight: 600; }
+        input, textarea { 
+            width: 100%; padding: 14px; border: 1px solid var(--border); 
+            border-radius: 14px; font-size: 16px; background: #fdfdfd; appearance: none;
+        }
+        input:focus, textarea:focus { outline: 2px solid var(--primary); border-color: transparent; }
+        textarea { height: 160px; resize: none; }
 
-        #overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 998; backdrop-filter: blur(2px); }
+        .btn-main { background: var(--primary); color: white; border: none; width: 100%; padding: 18px; border-radius: 16px; font-weight: 700; font-size: 1.05rem; margin-top: 20px; cursor: pointer; }
+        .btn-delete { background: #fee2e2; color: #ef4444; border: none; width: 100%; padding: 14px; border-radius: 14px; margin-top: 15px; font-weight: 600; display: none; cursor: pointer; }
+
+        #overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; backdrop-filter: blur(4px); }
     </style>
 </head>
 <body>
 
-<header>
-    <div class="menu-toggle" onclick="toggleMenu()">☰</div>
-    <div id="headerTitle" style="font-weight: 700;">국토대장정 트래커</div>
-</header>
-
 <nav id="sidebar">
-    <div class="sidebar-header">기록 목록</div>
-    <div class="new-btn" onclick="initForm()">+ 새 기록 작성</div>
+    <div class="sidebar-header">나의 대장정 목록</div>
+    <button class="new-btn" onclick="initForm()">+ 새로운 하루 기록</button>
     <div class="divider"></div>
     <div id="menuList" class="menu-list"></div>
 </nav>
 
 <div id="overlay" onclick="toggleMenu()"></div>
 
-<main>
-    <div class="card" id="mainCard">
-        <h2 id="viewTitle">새 여정 기록</h2>
-        <div class="input-grid">
-            <div class="full"><label>일차</label><input type="number" id="day" placeholder="예: 1"></div>
-            <div><label>출발지</label><input type="text" id="startPos" placeholder="예: 서울"></div>
-            <div><label>도착지</label><input type="text" id="endPos" placeholder="예: 수원"></div>
-            <div><label>이동 거리(km)</label><input type="number" id="distance" step="0.1" placeholder="0.0"></div>
-            <div><label>소요 시간</label><input type="text" id="duration" placeholder="예: 6시간 30분"></div>
-            <div><label>걸음 수</label><input type="number" id="steps" placeholder="0"></div>
-            <div><label>비용(원)</label><input type="number" id="cost" placeholder="0"></div>
-            <div class="full"><label>상세 메모</label><textarea id="memo" placeholder="오늘의 에피소드..."></textarea></div>
+<div class="main-wrapper">
+    <header>
+        <div class="menu-toggle" onclick="toggleMenu()">☰</div>
+        <div style="font-weight: 800; font-size: 1.1rem; letter-spacing: -0.5px;">국토대장정 로그</div>
+    </header>
+
+    <main>
+        <div class="card" id="mainCard">
+            <h2 id="viewTitle">새로운 여정 기록</h2>
+            <div class="input-grid">
+                <div class="full"><label>몇 일차인가요?</label><input type="number" id="day" placeholder="예: 1"></div>
+                <div><label>출발지</label><input type="text" id="startPos" placeholder="출발 장소"></div>
+                <div><label>도착지</label><input type="text" id="endPos" placeholder="도착 장소"></div>
+                <div><label>이동 거리(km)</label><input type="number" id="distance" step="0.1" placeholder="0.0"></div>
+                <div><label>소요 시간</label><input type="text" id="duration" placeholder="예: 8시간"></div>
+                <div><label>걸음 수</label><input type="number" id="steps" placeholder="0"></div>
+                <div><label>오늘 쓴 비용(원)</label><input type="number" id="cost" placeholder="0"></div>
+                <div class="full"><label>오늘의 메모</label><textarea id="memo" placeholder="어떤 일이 있었나요?"></textarea></div>
+            </div>
+            <button class="btn-main" id="submitBtn" onclick="saveData()">오늘 기록 저장하기</button>
+            <button class="btn-delete" id="deleteBtn">이 기록 삭제하기</button>
         </div>
-        <button class="btn-main" id="submitBtn" onclick="saveData()">저장하기</button>
-        <button class="btn-delete" id="deleteBtn">기록 삭제하기</button>
-    </div>
-</main>
+    </main>
+</div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    // 기존 Firebase 설정 유지
     const firebaseConfig = {
         apiKey: "AIzaSyBQaElZXd6gm2wyxTCRg2UMVyntRZAJCNI",
         authDomain: "ktrek-a1779.firebaseapp.com",
@@ -132,7 +159,7 @@
     const logsRef = ref(db, 'trekking_logs');
     let currentKey = null;
 
-    // 메뉴 토글 (모바일에서만 작동)
+    // 메뉴 토글 함수 (모바일 전용)
     window.toggleMenu = () => {
         if (window.innerWidth < 768) {
             document.getElementById('sidebar').classList.toggle('active');
@@ -140,42 +167,45 @@
         }
     };
 
+    // 폼 초기화
     window.initForm = () => {
         currentKey = null;
-        document.getElementById('viewTitle').innerText = "새 여정 기록";
+        document.getElementById('viewTitle').innerText = "새로운 여정 기록";
         document.querySelectorAll('input, textarea').forEach(el => el.value = "");
-        document.getElementById('submitBtn').innerText = "저장하기";
+        document.getElementById('submitBtn').innerText = "오늘 기록 저장하기";
         document.getElementById('deleteBtn').style.display = "none";
-        toggleMenu(); // 모바일인 경우 닫기
+        toggleMenu(); 
     };
 
+    // 데이터 저장 및 수정
     window.saveData = () => {
         const payload = {
             day: document.getElementById('day').value,
             startPos: document.getElementById('startPos').value,
             endPos: document.getElementById('endPos').value,
             distance: document.getElementById('distance').value,
-            duration: document.getElementById('duration').value, // 소요 시간 추가
+            duration: document.getElementById('duration').value,
             steps: document.getElementById('steps').value,
             cost: document.getElementById('cost').value,
             memo: document.getElementById('memo').value,
             updatedAt: Date.now()
         };
 
-        if(!payload.day || !payload.memo) return alert("일차와 메모를 입력해주세요!");
+        if(!payload.day || !payload.memo) return alert("일차와 메모는 꼭 적어주세요!");
 
         if(currentKey) {
-            update(ref(db, `trekking_logs/${currentKey}`), payload).then(() => alert("수정되었습니다."));
+            update(ref(db, `trekking_logs/${currentKey}`), payload).then(() => alert("수정 완료!"));
         } else {
             push(logsRef, payload).then(() => {
-                alert("기록되었습니다.");
+                alert("기록 완료!");
                 initForm();
             });
         }
     };
 
+    // 데이터 삭제
     document.getElementById('deleteBtn').onclick = () => {
-        if(currentKey && confirm("이 기록을 삭제하시겠습니까?")) {
+        if(currentKey && confirm("정말 이 기록을 삭제할까요?")) {
             remove(ref(db, `trekking_logs/${currentKey}`)).then(() => {
                 alert("삭제되었습니다.");
                 initForm();
@@ -183,6 +213,7 @@
         }
     };
 
+    // 메뉴 리스트 업데이트
     onValue(logsRef, (snapshot) => {
         const menuList = document.getElementById('menuList');
         menuList.innerHTML = "";
@@ -194,7 +225,7 @@
                 const item = document.createElement('div');
                 item.className = 'menu-item';
                 item.innerHTML = `
-                    <div class="day-text">Day ${val.day}</div>
+                    <div class="day-text">여정 ${val.day}일차</div>
                     <div class="route-text">${val.startPos || '출발'} → ${val.endPos || '도착'}</div>
                     <div class="dist-text">📏 ${val.distance || 0}km | 🕒 ${val.duration || '-'}</div>
                 `;
@@ -204,22 +235,23 @@
         }
     });
 
+    // 데이터 상세 로드
     function loadDetail(key, data) {
         currentKey = key;
-        document.getElementById('viewTitle').innerText = `Day ${data.day} 기록 확인`;
+        document.getElementById('viewTitle').innerText = `${data.day}일차 기록 수정`;
         document.getElementById('day').value = data.day;
         document.getElementById('startPos').value = data.startPos;
         document.getElementById('endPos').value = data.endPos;
         document.getElementById('distance').value = data.distance;
-        document.getElementById('duration').value = data.duration || ""; // 소요 시간 로드
+        document.getElementById('duration').value = data.duration || "";
         document.getElementById('steps').value = data.steps;
         document.getElementById('cost').value = data.cost;
         document.getElementById('memo').value = data.memo;
         
-        document.getElementById('submitBtn').innerText = "기록 수정하기";
+        document.getElementById('submitBtn').innerText = "기록 수정 완료하기";
         document.getElementById('deleteBtn').style.display = "block";
         
-        toggleMenu(); // 모바일인 경우 닫기
+        toggleMenu(); 
         window.scrollTo({top: 0, behavior: 'smooth'});
     }
 </script>
