@@ -137,6 +137,11 @@
                 <div class="full"><label>오늘의 메모</label><textarea id="memo" placeholder="어떤 일이 있었나요?"></textarea></div>
             </div>
 
+            <div class="full">
+                <label>관리자 인증 키</label>
+                <input type="password" id="adminPw" placeholder="수정/삭제 시 필요합니다">
+            </div>
+
             <div id="photoArea">
                 <h3>오늘의 한 장</h3>
                 <div class="img-container">
@@ -209,27 +214,37 @@
             cost: document.getElementById('cost').value,
             photoUrl: document.getElementById('photoUrl').value,
             memo: document.getElementById('memo').value,
+            pw: document.getElementById('adminPw').value, // 추가된 부분
             updatedAt: Date.now()
         };
 
         if(!payload.day || !payload.memo) return alert("일차와 메모는 꼭 적어주세요!");
 
         if(currentKey) {
-            update(ref(db, `trekking_logs/${currentKey}`), payload).then(() => alert("수정 완료!"));
+            update(ref(db, `trekking_logs/${currentKey}`), payload)
+                .then(() => alert("수정 완료!"))
+                .catch((err) => alert("인증 키가 틀려 수정할 수 없습니다."));
         } else {
             push(logsRef, payload).then(() => {
                 alert("기록 완료!");
                 initForm();
-            });
+            }).catch((err) => alert("인증 키가 틀려 저장할 수 없습니다."));
         }
     };
 
     document.getElementById('deleteBtn').onclick = () => {
+        const pw = document.getElementById('adminPw').value;
+        if(!pw) return alert("삭제하려면 비밀번호를 입력해야 합니다.");
+
         if(currentKey && confirm("정말 이 기록을 삭제할까요?")) {
-            remove(ref(db, `trekking_logs/${currentKey}`)).then(() => {
-                alert("삭제되었습니다.");
-                initForm();
-            });
+            // 삭제를 시도할 때, 해당 경로의 pw 값을 업데이트하는 식으로
+            // 권한을 체크하거나 아예 전체 삭제 규칙을 강화합니다.
+            remove(ref(db, `trekking_logs/${currentKey}`))
+                .then(() => {
+                    alert("삭제되었습니다.");
+                    initForm();
+                })
+                .catch(() => alert("비밀번호가 틀려 삭제할 수 없습니다."));
         }
     };
 
