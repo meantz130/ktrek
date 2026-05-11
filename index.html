@@ -19,91 +19,69 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { 
             font-family: 'Pretendard', sans-serif; 
-            margin: 0; 
-            background: var(--bg); 
-            color: #1e293b; 
-            height: 100vh; 
-            display: flex;
-            overflow: hidden;
+            margin: 0; background: var(--bg); color: #1e293b; 
+            height: 100vh; display: flex; overflow: hidden;
         }
 
-        /* 사이드바 설정 */
+        /* 사이드바 */
         #sidebar {
             position: fixed; left: 0; top: 0; width: var(--sidebar-width); height: 100%;
             background: var(--sidebar-bg); color: white; z-index: 1001;
             display: flex; flex-direction: column; transition: transform 0.3s ease;
         }
-        
         .sidebar-header { padding: 25px 20px 10px; font-weight: 700; font-size: 1.1rem; }
         .new-btn { margin: 10px 20px; padding: 14px; background: var(--primary); border-radius: 12px; text-align: center; font-weight: 600; cursor: pointer; border: none; color: white; font-size: 1rem; }
-        .divider { height: 1px; background: #334155; margin: 15px 20px; }
         .menu-list { overflow-y: auto; flex: 1; padding: 0 15px 20px; }
-        
         .menu-item { 
             padding: 15px; border-radius: 12px; margin-bottom: 10px; cursor: pointer; 
             background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
         }
-        .menu-item:active { background: rgba(255,255,255,0.15); }
         .menu-item .day-text { font-weight: 700; color: #60a5fa; font-size: 0.85rem; margin-bottom: 4px; }
-        .menu-item .route-text { font-size: 0.95rem; font-weight: 500; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .menu-item .dist-text { font-size: 0.8rem; color: #94a3b8; }
+        .menu-item .route-text { font-size: 0.95rem; font-weight: 500; margin-bottom: 4px; }
 
+        /* 메인 컨텐츠 */
         .main-wrapper {
             flex: 1; display: flex; flex-direction: column;
             margin-left: var(--sidebar-width); width: calc(100% - var(--sidebar-width));
             height: 100vh; transition: margin 0.3s ease;
         }
-
         header {
             height: var(--header-height); background: var(--white);
             display: flex; align-items: center; padding: 0 20px;
-            border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 1000;
+            border-bottom: 1px solid var(--border);
         }
+        .menu-toggle { display: none; font-size: 24px; cursor: pointer; margin-right: 10px; }
+        main { flex: 1; overflow-y: auto; padding: 20px; max-width: 700px; margin: 0 auto; width: 100%; }
 
-        .menu-toggle {
-            display: none; font-size: 24px; cursor: pointer; 
-            width: 44px; height: 44px; line-height: 44px; text-align: center;
-            margin-right: 10px; border-radius: 8px; background: #f1f5f9;
+        .card { background: var(--white); border-radius: 24px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+        .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .full { grid-column: span 2; }
+        label { display: block; font-size: 0.8rem; color: #64748b; margin: 0 0 6px 4px; font-weight: 600; }
+        input, textarea { 
+            width: 100%; padding: 14px; border: 1px solid var(--border); 
+            border-radius: 14px; font-size: 16px;
         }
+        textarea { height: 120px; resize: none; }
 
-        main { 
-            flex: 1; overflow-y: auto; padding: 20px; 
-            width: 100%; max-width: 700px; margin: 0 auto;
+        /* 사진 영역 수정 */
+        .photo-action-area { margin-bottom: 10px; }
+        .btn-link-input { 
+            background: #f1f5f9; border: 1px solid var(--border); padding: 10px; 
+            border-radius: 10px; font-size: 0.9rem; cursor: pointer; width: 100%; text-align: left;
+            color: #475569; font-weight: 500;
         }
+        .img-container { margin-top: 10px; border-radius: 16px; overflow: hidden; display: none; background: #eee; }
+        .img-container img { width: 100%; height: auto; display: block; }
+
+        .btn-main { background: var(--primary); color: white; border: none; width: 100%; padding: 18px; border-radius: 16px; font-weight: 700; font-size: 1.05rem; margin-top: 15px; cursor: pointer; }
+        .btn-delete { background: #fee2e2; color: #ef4444; border: none; width: 100%; padding: 14px; border-radius: 14px; margin-top: 10px; font-weight: 600; display: none; cursor: pointer; }
 
         @media (max-width: 767px) {
             #sidebar { transform: translateX(-100%); }
             #sidebar.active { transform: translateX(0); }
             .main-wrapper { margin-left: 0; width: 100%; }
             .menu-toggle { display: block; }
-            #overlay.active { display: block; }
-            main { padding: 15px; }
         }
-
-        .card { background: var(--white); border-radius: 24px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
-        h2 { margin: 0 0 20px 0; font-size: 1.3rem; color: var(--primary); font-weight: 700; }
-
-        .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .full { grid-column: span 2; }
-        label { display: block; font-size: 0.8rem; color: #64748b; margin: 0 0 6px 4px; font-weight: 600; }
-        input, textarea { 
-            width: 100%; padding: 14px; border: 1px solid var(--border); 
-            border-radius: 14px; font-size: 16px; background: #fdfdfd; appearance: none;
-        }
-        input[type="file"] { padding: 10px; background: white; cursor: pointer; }
-        input:focus, textarea:focus { outline: 2px solid var(--primary); border-color: transparent; }
-        textarea { height: 160px; resize: none; }
-
-        .img-container { margin-top: 10px; width: 100%; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.08); display: none; }
-        .img-container img { width: 100%; height: auto; display: block; object-fit: cover; }
-
-        .btn-main { background: var(--primary); color: white; border: none; width: 100%; padding: 18px; border-radius: 16px; font-weight: 700; font-size: 1.05rem; margin-top: 20px; cursor: pointer; }
-        .btn-main:disabled { background: #94a3b8; cursor: not-allowed; }
-        .btn-delete { background: #fee2e2; color: #ef4444; border: none; width: 100%; padding: 14px; border-radius: 14px; margin-top: 15px; font-weight: 600; display: none; cursor: pointer; }
-
-        #overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; backdrop-filter: blur(4px); }
-        
-        .admin-section { margin-top: 30px; padding-top: 20px; border-top: 1px dashed var(--border); }
     </style>
 </head>
 <body>
@@ -111,49 +89,47 @@
 <nav id="sidebar">
     <div class="sidebar-header">나의 대장정 목록</div>
     <button class="new-btn" onclick="initForm()">+ 새로운 하루 기록</button>
-    <div class="divider"></div>
     <div id="menuList" class="menu-list"></div>
 </nav>
-
-<div id="overlay" onclick="toggleMenu()"></div>
 
 <div class="main-wrapper">
     <header>
         <div class="menu-toggle" onclick="toggleMenu()">☰</div>
-        <div style="font-weight: 800; font-size: 1.1rem; letter-spacing: -0.5px;">국토대장정 로그</div>
+        <div style="font-weight: 800; font-size: 1.1rem;">국토대장정 로그</div>
     </header>
 
     <main>
-        <div class="card" id="mainCard">
-            <h2 id="viewTitle">새로운 여정 기록</h2>
+        <div class="card">
+            <h2 id="viewTitle" style="color: var(--primary); margin-top: 0;">새로운 여정 기록</h2>
             <div class="input-grid">
                 <div><label>날짜</label><input type="date" id="dateInput"></div>
-                <div><label>몇 일차인가요?</label><input type="number" id="day" placeholder="예: 1"></div>
-                <div><label>출발지</label><input type="text" id="startPos" placeholder="출발 장소"></div>
-                <div><label>도착지</label><input type="text" id="endPos" placeholder="도착 장소"></div>
-                <div><label>이동 거리(km)</label><input type="number" id="distance" step="0.1" placeholder="0.0"></div>
-                <div><label>소요 시간</label><input type="text" id="duration" placeholder="예: 8시간"></div>
-                <div><label>걸음 수</label><input type="number" id="steps" placeholder="0"></div>
-                <div><label>오늘 쓴 비용(원)</label><input type="number" id="cost" placeholder="0"></div>
+                <div><label>일차</label><input type="number" id="day" placeholder="예: 1"></div>
+                <div><label>출발지</label><input type="text" id="startPos"></div>
+                <div><label>도착지</label><input type="text" id="endPos"></div>
+                <div><label>이동 거리(km)</label><input type="number" id="distance" step="0.1"></div>
+                <div><label>소요 시간</label><input type="text" id="duration"></div>
                 
                 <div class="full">
-                    <label>오늘의 사진 (직접 업로드)</label>
-                    <input type="file" id="photoFile" accept="image/*">
-                    <div class="img-container" id="photoPreviewArea">
-                        <img id="localPreviewImg" src="" alt="미리보기 이미지">
+                    <label>오늘의 사진</label>
+                    <div class="photo-action-area">
+                        <button class="btn-link-input" onclick="inputPhotoUrl()">📸 사진 링크 입력 또는 수정하기...</button>
+                        <input type="hidden" id="photoUrl">
+                    </div>
+                    <div class="img-container" id="previewArea">
+                        <img id="previewImg" src="">
                     </div>
                 </div>
-                
-                <div class="full"><label>오늘의 메모</label><textarea id="memo" placeholder="어떤 일이 있었나요?"></textarea></div>
-            </div>
 
-            <div class="full admin-section">
-                <label>관리자 인증 키</label>
-                <input type="password" id="adminPw" placeholder="수정/삭제 시 필요합니다">
+                <div class="full"><label>오늘의 메모</label><textarea id="memo" placeholder="오늘의 추억을 적어주세요."></textarea></div>
+                
+                <div class="full" style="margin-top: 10px; border-top: 1px dashed #eee; padding-top: 20px;">
+                    <label>관리자 인증 키</label>
+                    <input type="password" id="adminPw" placeholder="수정/삭제용 비밀번호">
+                </div>
             </div>
 
             <button class="btn-main" id="submitBtn" onclick="saveData()">오늘 기록 저장하기</button>
-            <button class="btn-delete" id="deleteBtn">이 기록 삭제하기</button>
+            <button class="btn-delete" id="deleteBtn" onclick="deleteData()">기록 삭제하기</button>
         </div>
     </main>
 </div>
@@ -161,7 +137,6 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-    import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyBQaElZXd6gm2wyxTCRg2UMVyntRZAJCNI",
@@ -170,209 +145,144 @@
         projectId: "ktrek-a1779",
         storageBucket: "ktrek-a1779.firebasestorage.app",
         messagingSenderId: "935801480500",
-        appId: "1:935801480500:web:3af4137193b9df9a71f161",
-      	measurementId: "G-F9WGTJ04SW"
+        appId: "1:935801480500:web:3af4137193b9df9a71f161"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    const storage = getStorage(app);
     const logsRef = ref(db, 'trekking_logs');
     
     let currentKey = null;
-    let currentPhotoUrl = ""; // 기존 이미지 URL 보관용
 
-    // YYYY-MM-DD 포맷을 M월 D일(요일)로 변환하는 함수
-    function formatKoreanDate(dateStr) {
-        if (!dateStr) return "";
-        const date = new Date(dateStr);
+    // 요일 계산 함수
+    function getWeekDay(dateStr) {
+        if(!dateStr) return "";
         const days = ['일', '월', '화', '수', '목', '금', '토'];
-        return `${date.getMonth() + 1}월 ${date.getDate()}일(${days[date.getDay()]})`;
+        const date = new Date(dateStr);
+        return days[date.getDay()];
     }
 
-    // 사진 미리보기 기능
-    document.getElementById('photoFile').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(evt) {
-                document.getElementById('localPreviewImg').src = evt.target.result;
-                document.getElementById('photoPreviewArea').style.display = 'block';
-            }
-            reader.readAsDataURL(file);
+    // 사진 링크 입력 창
+    window.inputPhotoUrl = () => {
+        const current = document.getElementById('photoUrl').value;
+        const url = prompt("이미지 주소(URL)를 입력해주세요:", current);
+        if (url !== null) {
+            document.getElementById('photoUrl').value = url;
+            updatePreview(url);
         }
-    });
+    };
+
+    function updatePreview(url) {
+        const area = document.getElementById('previewArea');
+        const img = document.getElementById('previewImg');
+        if (url && url.trim() !== "") {
+            img.src = url;
+            area.style.display = "block";
+        } else {
+            area.style.display = "none";
+        }
+    }
 
     window.toggleMenu = () => {
-        if (window.innerWidth < 768) {
-            document.getElementById('sidebar').classList.toggle('active');
-            document.getElementById('overlay').classList.toggle('active');
-        }
+        document.getElementById('sidebar').classList.toggle('active');
     };
 
     window.initForm = () => {
         currentKey = null;
-        currentPhotoUrl = "";
         document.getElementById('viewTitle').innerText = "새로운 여정 기록";
-        document.querySelectorAll('input, textarea').forEach(el => el.value = "");
-        
-        // 날짜 기본값을 오늘로 세팅
+        document.querySelectorAll('input, textarea').forEach(el => {
+            if(el.id !== 'adminPw') el.value = "";
+        });
         document.getElementById('dateInput').value = new Date().toISOString().split('T')[0];
-        
-        document.getElementById('photoPreviewArea').style.display = "none";
-        document.getElementById('localPreviewImg').src = "";
+        document.getElementById('previewArea').style.display = "none";
+        document.getElementById('adminPw').value = "";
         document.getElementById('submitBtn').innerText = "오늘 기록 저장하기";
         document.getElementById('deleteBtn').style.display = "none";
-        document.getElementById('adminPw').value = ""; // 비밀번호 칸 초기화
-        toggleMenu(); 
+        if (window.innerWidth < 768) document.getElementById('sidebar').classList.remove('active');
     };
 
-    window.saveData = async () => {
-        const dateVal = document.getElementById('dateInput').value;
-        const dayVal = document.getElementById('day').value;
-        const memoVal = document.getElementById('memo').value;
-        const pwVal = document.getElementById('adminPw').value;
+    window.saveData = () => {
+        const day = document.getElementById('day').value;
+        const date = document.getElementById('dateInput').value;
+        const pw = document.getElementById('adminPw').value;
+        
+        if(!day || !date) return alert("날짜와 일차를 입력해주세요!");
+        if(!pw) return alert("관리자 인증 키를 입력해주세요!");
 
-        if(!dateVal || !dayVal || !memoVal) return alert("날짜, 일차, 메모는 꼭 적어주세요!");
-
-        let finalPhotoUrl = currentPhotoUrl;
-        const fileInput = document.getElementById('photoFile');
-        const submitBtn = document.getElementById('submitBtn');
-
-        // 파일이 선택된 경우 Firebase Storage에 먼저 업로드
-        if (fileInput.files.length > 0) {
-            submitBtn.innerText = "이미지 업로드 중...";
-            submitBtn.disabled = true;
-            const file = fileInput.files[0];
-            const sRef = storageRef(storage, `trek_photos/${Date.now()}_${file.name}`);
-            
-            try {
-                const snapshot = await uploadBytes(sRef, file);
-                finalPhotoUrl = await getDownloadURL(snapshot.ref);
-            } catch(e) {
-                alert("이미지 업로드에 실패했습니다. 권한 설정이나 네트워크를 확인해주세요.");
-                submitBtn.innerText = currentKey ? "기록 수정 완료하기" : "오늘 기록 저장하기";
-                submitBtn.disabled = false;
-                return;
-            }
-        }
-
-        const payload = {
-            date: dateVal,
-            day: dayVal,
+        const data = {
+            date: date,
+            day: day,
             startPos: document.getElementById('startPos').value,
             endPos: document.getElementById('endPos').value,
             distance: document.getElementById('distance').value,
             duration: document.getElementById('duration').value,
-            steps: document.getElementById('steps').value,
-            cost: document.getElementById('cost').value,
-            photoUrl: finalPhotoUrl,
-            memo: memoVal,
-            pw: pwVal,
-            updatedAt: Date.now()
+            photoUrl: document.getElementById('photoUrl').value,
+            memo: document.getElementById('memo').value,
+            pw: pw
         };
 
         if(currentKey) {
-            update(ref(db, `trekking_logs/${currentKey}`), payload)
+            update(ref(db, `trekking_logs/${currentKey}`), data)
                 .then(() => {
-                    alert("수정 완료!");
-                    document.getElementById('adminPw').value = ""; // 성공 시 비밀번호 초기화
-                    submitBtn.innerText = "기록 수정 완료하기";
-                    submitBtn.disabled = false;
+                    alert("수정되었습니다.");
+                    document.getElementById('adminPw').value = ""; // 비밀번호 초기화
                 })
-                .catch((err) => {
-                    alert("인증 키가 틀려 수정할 수 없거나 오류가 발생했습니다.");
-                    submitBtn.innerText = "기록 수정 완료하기";
-                    submitBtn.disabled = false;
-                });
+                .catch(() => alert("인증 실패 또는 오류"));
         } else {
-            push(logsRef, payload).then(() => {
-                alert("기록 완료!");
-                submitBtn.disabled = false;
+            push(logsRef, data).then(() => {
+                alert("저장되었습니다.");
                 initForm();
-            }).catch((err) => {
-                alert("인증 키가 틀려 저장할 수 없거나 오류가 발생했습니다.");
-                submitBtn.innerText = "오늘 기록 저장하기";
-                submitBtn.disabled = false;
             });
         }
     };
 
-    document.getElementById('deleteBtn').onclick = () => {
+    window.deleteData = () => {
         const pw = document.getElementById('adminPw').value;
-        if(!pw) return alert("삭제하려면 비밀번호를 입력해야 합니다.");
-
-        if(currentKey && confirm("정말 이 기록을 삭제할까요?")) {
+        if(!pw) return alert("비밀번호가 필요합니다.");
+        if(confirm("정말 삭제할까요?") && currentKey) {
             remove(ref(db, `trekking_logs/${currentKey}`))
-                .then(() => {
-                    alert("삭제되었습니다.");
-                    initForm();
-                })
-                .catch(() => alert("비밀번호가 틀려 삭제할 수 없습니다."));
+                .then(() => { alert("삭제됨"); initForm(); })
+                .catch(() => alert("인증 실패"));
         }
     };
 
     onValue(logsRef, (snapshot) => {
-        const menuList = document.getElementById('menuList');
-        menuList.innerHTML = "";
+        const list = document.getElementById('menuList');
+        list.innerHTML = "";
         const data = snapshot.val();
-        
-        if (data) {
-            const sorted = Object.entries(data).sort((a, b) => b[1].day - a[1].day);
-            sorted.forEach(([key, val]) => {
+        if(data) {
+            Object.entries(data).sort((a,b) => b[1].day - a[1].day).forEach(([key, val]) => {
                 const item = document.createElement('div');
                 item.className = 'menu-item';
-                
-                // 날짜 포맷 적용하여 메뉴에 표시
-                const dateDisplay = val.date ? formatKoreanDate(val.date) : '';
+                const dateObj = new Date(val.date);
+                const dateText = `${dateObj.getMonth()+1}월 ${dateObj.getDate()}일(${getWeekDay(val.date)})`;
                 
                 item.innerHTML = `
-                    <div class="day-text">${dateDisplay} - ${val.day}일차</div>
-                    <div class="route-text">${val.startPos || '출발'} → ${val.endPos || '도착'}</div>
-                    <div class="dist-text">📏 ${val.distance || 0}km | 🕒 ${val.duration || '-'}</div>
+                    <div class="day-text">${dateText} - ${val.day}일차</div>
+                    <div class="route-text">${val.startPos || '?'} → ${val.endPos || '?'}</div>
                 `;
-                item.onclick = () => loadDetail(key, val);
-                menuList.appendChild(item);
+                item.onclick = () => {
+                    currentKey = key;
+                    document.getElementById('viewTitle').innerText = `${val.day}일차 수정`;
+                    document.getElementById('dateInput').value = val.date;
+                    document.getElementById('day').value = val.day;
+                    document.getElementById('startPos').value = val.startPos;
+                    document.getElementById('endPos').value = val.endPos;
+                    document.getElementById('distance').value = val.distance;
+                    document.getElementById('duration').value = val.duration;
+                    document.getElementById('photoUrl').value = val.photoUrl || "";
+                    document.getElementById('memo').value = val.memo;
+                    document.getElementById('adminPw').value = "";
+                    updatePreview(val.photoUrl);
+                    document.getElementById('submitBtn').innerText = "기록 수정 완료하기";
+                    document.getElementById('deleteBtn').style.display = "block";
+                    if (window.innerWidth < 768) toggleMenu();
+                };
+                list.appendChild(item);
             });
         }
     });
 
-    function loadDetail(key, data) {
-        currentKey = key;
-        currentPhotoUrl = data.photoUrl || ""; // 수정 시 기존 사진 유지
-        
-        document.getElementById('viewTitle').innerText = `${data.day}일차 기록 수정`;
-        document.getElementById('dateInput').value = data.date || "";
-        document.getElementById('day').value = data.day;
-        document.getElementById('startPos').value = data.startPos;
-        document.getElementById('endPos').value = data.endPos;
-        document.getElementById('distance').value = data.distance;
-        document.getElementById('duration').value = data.duration || "";
-        document.getElementById('steps').value = data.steps;
-        document.getElementById('cost').value = data.cost;
-        document.getElementById('photoFile').value = ""; // 파일 선택란 초기화
-        document.getElementById('memo').value = data.memo;
-        document.getElementById('adminPw').value = ""; // 인증 키 초기화
-
-        // 사진 표시 처리
-        const imgDisplay = document.getElementById('localPreviewImg');
-        const photoArea = document.getElementById('photoPreviewArea');
-        if (data.photoUrl) {
-            imgDisplay.src = data.photoUrl;
-            photoArea.style.display = "block";
-        } else {
-            photoArea.style.display = "none";
-            imgDisplay.src = "";
-        }
-        
-        document.getElementById('submitBtn').innerText = "기록 수정 완료하기";
-        document.getElementById('deleteBtn').style.display = "block";
-        
-        toggleMenu(); 
-        window.scrollTo({top: 0, behavior: 'smooth'});
-    }
-
-    // 초기 실행 시 폼 세팅
     initForm();
 </script>
 </body>
