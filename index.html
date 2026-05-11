@@ -90,6 +90,7 @@
             width: 100%; padding: 14px; border: 1px solid var(--border); 
             border-radius: 14px; font-size: 16px; background: #fdfdfd; appearance: none;
         }
+        input[type="date"] { font-family: 'Pretendard', sans-serif; }
         input:focus, textarea:focus { outline: 2px solid var(--primary); border-color: transparent; }
         textarea { height: 160px; resize: none; }
 
@@ -99,7 +100,11 @@
         .img-container { width: 100%; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
         .img-container img { width: 100%; height: auto; display: block; }
 
-        .btn-main { background: var(--primary); color: white; border: none; width: 100%; padding: 18px; border-radius: 16px; font-weight: 700; font-size: 1.05rem; margin-top: 20px; cursor: pointer; }
+        /* 재배치된 메모와 비밀번호 영역 간격 설정 */
+        .bottom-inputs { margin-top: 25px; border-top: 1px solid var(--border); padding-top: 20px; }
+        .bottom-inputs > div { margin-bottom: 15px; }
+
+        .btn-main { background: var(--primary); color: white; border: none; width: 100%; padding: 18px; border-radius: 16px; font-weight: 700; font-size: 1.05rem; margin-top: 10px; cursor: pointer; }
         .btn-delete { background: #fee2e2; color: #ef4444; border: none; width: 100%; padding: 14px; border-radius: 14px; margin-top: 15px; font-weight: 600; display: none; cursor: pointer; }
 
         #overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; backdrop-filter: blur(4px); }
@@ -125,7 +130,9 @@
     <main>
         <div class="card" id="mainCard">
             <h2 id="viewTitle">새로운 여정 기록</h2>
+            
             <div class="input-grid">
+                <div class="full"><label>날짜</label><input type="date" id="recordDate"></div>
                 <div class="full"><label>몇 일차인가요?</label><input type="number" id="day" placeholder="예: 1"></div>
                 <div><label>출발지</label><input type="text" id="startPos" placeholder="출발 장소"></div>
                 <div><label>도착지</label><input type="text" id="endPos" placeholder="도착 장소"></div>
@@ -134,18 +141,20 @@
                 <div><label>걸음 수</label><input type="number" id="steps" placeholder="0"></div>
                 <div><label>오늘 쓴 비용(원)</label><input type="number" id="cost" placeholder="0"></div>
                 <div class="full"><label>오늘의 사진 URL (구글 드라이브 공유 링크)</label><input type="text" id="photoUrl" placeholder="링크를 붙여넣으세요"></div>
-                <div class="full"><label>오늘의 메모</label><textarea id="memo" placeholder="어떤 일이 있었나요?"></textarea></div>
-            </div>
-
-            <div class="full">
-                <label>관리자 인증 키</label>
-                <input type="password" id="adminPw" placeholder="수정/삭제 시 필요합니다">
             </div>
 
             <div id="photoArea">
                 <h3>오늘의 한 장</h3>
                 <div class="img-container">
                     <img id="displayImg" src="" alt="여정 사진">
+                </div>
+            </div>
+
+            <div class="bottom-inputs">
+                <div class="full"><label>오늘의 메모</label><textarea id="memo" placeholder="어떤 일이 있었나요?"></textarea></div>
+                <div class="full">
+                    <label>관리자 인증 키</label>
+                    <input type="password" id="adminPw" placeholder="수정/삭제 시 필요합니다">
                 </div>
             </div>
 
@@ -159,17 +168,6 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    // 1. 년, 월, 일, 요일 입력 필드 동적 추가 (HTML 수정 없이 폼 요소 생성)
-    const dayContainer = document.querySelector('.input-grid > .full');
-    if (dayContainer && !document.getElementById('year')) {
-        dayContainer.insertAdjacentHTML('afterend', `
-            <div><label>년도</label><input type="number" id="year" placeholder="예: 2024"></div>
-            <div><label>월</label><input type="number" id="month" placeholder="예: 5"></div>
-            <div><label>일</label><input type="number" id="dateVal" placeholder="예: 12"></div>
-            <div><label>요일</label><input type="text" id="weekDay" placeholder="예: 월"></div>
-        `);
-    }
-
     const firebaseConfig = {
         apiKey: "AIzaSyBQaElZXd6gm2wyxTCRg2UMVyntRZAJCNI",
         authDomain: "ktrek-a1779.firebaseapp.com",
@@ -178,7 +176,7 @@
         storageBucket: "ktrek-a1779.firebasestorage.app",
         messagingSenderId: "935801480500",
         appId: "1:935801480500:web:3af4137193b9df9a71f161",
-        measurementId: "G-F9WGTJ04SW"
+      	measurementId: "G-F9WGTJ04SW"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -197,6 +195,15 @@
         return link;
     }
 
+    // 날짜를 YYYY-MM-DD 형식으로 반환하는 헬퍼 함수
+    function getTodayString() {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
     window.toggleMenu = () => {
         if (window.innerWidth < 768) {
             document.getElementById('sidebar').classList.toggle('active');
@@ -207,21 +214,26 @@
     window.initForm = () => {
         currentKey = null;
         document.getElementById('viewTitle').innerText = "새로운 여정 기록";
-        // 모든 입력란 초기화 (새로 추가된 날짜 입력란 포함)
         document.querySelectorAll('input, textarea').forEach(el => el.value = "");
+        
+        // 새 폼 열 때 오늘 날짜 기본 세팅
+        document.getElementById('recordDate').value = getTodayString();
+        
         document.getElementById('photoArea').style.display = "none";
         document.getElementById('submitBtn').innerText = "오늘 기록 저장하기";
         document.getElementById('deleteBtn').style.display = "none";
         toggleMenu(); 
     };
 
+    // 초기 로딩 시 오늘 날짜 세팅
+    document.addEventListener("DOMContentLoaded", () => {
+        document.getElementById('recordDate').value = getTodayString();
+    });
+
     window.saveData = () => {
         const payload = {
+            date: document.getElementById('recordDate').value, // 캘린더 날짜 추가
             day: document.getElementById('day').value,
-            year: document.getElementById('year').value,
-            month: document.getElementById('month').value,
-            dateVal: document.getElementById('dateVal').value,
-            weekDay: document.getElementById('weekDay').value,
             startPos: document.getElementById('startPos').value,
             endPos: document.getElementById('endPos').value,
             distance: document.getElementById('distance').value,
@@ -240,7 +252,7 @@
             update(ref(db, `trekking_logs/${currentKey}`), payload)
                 .then(() => {
                     alert("수정 완료!");
-                    // 2. 수정 완료 후 비밀번호 입력란 초기화 (버그 수정)
+                    // [버그 수정] 수정 완료 후 비밀번호 입력칸 명시적 초기화
                     document.getElementById('adminPw').value = ""; 
                 })
                 .catch((err) => alert("인증 키가 틀려 수정할 수 없습니다."));
@@ -274,17 +286,20 @@
         if (data) {
             const sorted = Object.entries(data).sort((a, b) => b[1].day - a[1].day);
             sorted.forEach(([key, val]) => {
-                const item = document.createElement('div');
-                item.className = 'menu-item';
-                
-                // 3. 왼쪽 메뉴에 날짜 정보 조합하여 표시
-                let dateStr = "";
-                if (val.year && val.month && val.dateVal) {
-                    dateStr = `${val.year}년 ${val.month}월 ${val.dateVal}일 ${val.weekDay ? `(${val.weekDay})` : ''} - `;
+                // 메뉴에 표시될 날짜 텍스트 변환 로직 추가
+                let dateHtml = "";
+                if (val.date) {
+                    const d = new Date(val.date);
+                    const days = ['일', '월', '화', '수', '목', '금', '토'];
+                    const dateString = `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일 (${days[d.getDay()]})`;
+                    dateHtml = `<div style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 4px;">📅 ${dateString}</div>`;
                 }
 
+                const item = document.createElement('div');
+                item.className = 'menu-item';
                 item.innerHTML = `
-                    <div class="day-text">${dateStr}여정 ${val.day}일차</div>
+                    ${dateHtml}
+                    <div class="day-text">여정 ${val.day}일차</div>
                     <div class="route-text">${val.startPos || '출발'} → ${val.endPos || '도착'}</div>
                     <div class="dist-text">📏 ${val.distance || 0}km | 🕒 ${val.duration || '-'}</div>
                 `;
@@ -297,31 +312,27 @@
     function loadDetail(key, data) {
         currentKey = key;
         document.getElementById('viewTitle').innerText = `${data.day}일차 기록 수정`;
-        document.getElementById('day').value = data.day || "";
-        document.getElementById('year').value = data.year || "";
-        document.getElementById('month').value = data.month || "";
-        document.getElementById('dateVal').value = data.dateVal || "";
-        document.getElementById('weekDay').value = data.weekDay || "";
-        document.getElementById('startPos').value = data.startPos || "";
-        document.getElementById('endPos').value = data.endPos || "";
-        document.getElementById('distance').value = data.distance || "";
-        document.getElementById('duration').value = data.duration || "";
-        document.getElementById('steps').value = data.steps || "";
-        document.getElementById('cost').value = data.cost || "";
-        document.getElementById('photoUrl').value = data.photoUrl || "";
-        document.getElementById('memo').value = data.memo || "";
         
-        // 상세 항목 로드 시 이전 비밀번호 잔재 지우기
+        // 데이터 바인딩
+        document.getElementById('recordDate').value = data.date || getTodayString();
+        document.getElementById('day').value = data.day;
+        document.getElementById('startPos').value = data.startPos;
+        document.getElementById('endPos').value = data.endPos;
+        document.getElementById('distance').value = data.distance;
+        document.getElementById('duration').value = data.duration || "";
+        document.getElementById('steps').value = data.steps;
+        document.getElementById('cost').value = data.cost;
+        document.getElementById('photoUrl').value = data.photoUrl || "";
+        document.getElementById('memo').value = data.memo;
+        
+        // 상세내역 조회 시 이전 비밀번호 잔재 클리어 처리
         document.getElementById('adminPw').value = ""; 
 
-        // 사진 표시 처리
-        const imgDisplay = document.getElementById('displayImg');
-        const photoArea = document.getElementById('photoArea');
         if (data.photoUrl) {
-            imgDisplay.src = convertDriveLink(data.photoUrl);
-            photoArea.style.display = "block";
+            document.getElementById('displayImg').src = convertDriveLink(data.photoUrl);
+            document.getElementById('photoArea').style.display = "block";
         } else {
-            photoArea.style.display = "none";
+            document.getElementById('photoArea').style.display = "none";
         }
         
         document.getElementById('submitBtn').innerText = "기록 수정 완료하기";
