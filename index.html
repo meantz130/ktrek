@@ -44,7 +44,8 @@
             background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
         }
         .menu-item:active { background: rgba(255,255,255,0.15); }
-        .menu-item .day-text { font-weight: 700; color: #60a5fa; font-size: 0.85rem; margin-bottom: 4px; }
+        .menu-item .day-text { font-weight: 700; color: #60a5fa; font-size: 0.85rem; margin-bottom: 4px; display: flex; align-items: center; justify-content: space-between; }
+        .menu-item .date-text { font-size: 0.75rem; color: #94a3b8; font-weight: 500; }
         .menu-item .route-text { font-size: 0.95rem; font-weight: 500; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .menu-item .dist-text { font-size: 0.8rem; color: #94a3b8; }
 
@@ -93,15 +94,17 @@
         input:focus, textarea:focus { outline: 2px solid var(--primary); border-color: transparent; }
         textarea { height: 160px; resize: none; }
 
-        /* 사진 영역 스타일 (메모 위로 이동됨) */
-        #photoArea { margin-top: 15px; margin-bottom: 15px; border: 1px solid var(--border); border-radius: 16px; padding: 15px; display: none; background: #f8fafc; }
-        #photoArea h3 { font-size: 0.95rem; color: #64748b; margin-top: 0; margin-bottom: 12px; }
-        .img-container { width: 100%; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        /* 사진 영역 스타일 수정 (메모 위로 이동) */
+        #photoArea { margin: 10px 0; display: none; }
+        #photoArea h3 { font-size: 0.95rem; color: #64748b; margin-bottom: 12px; }
+        .img-container { width: 100%; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
         .img-container img { width: 100%; height: auto; display: block; }
 
-        .btn-main { background: var(--primary); color: white; border: none; width: 100%; padding: 18px; border-radius: 16px; font-weight: 700; font-size: 1.05rem; margin-top: 10px; cursor: pointer; }
+        .btn-main { background: var(--primary); color: white; border: none; width: 100%; padding: 18px; border-radius: 16px; font-weight: 700; font-size: 1.05rem; margin-top: 15px; cursor: pointer; }
         .btn-delete { background: #fee2e2; color: #ef4444; border: none; width: 100%; padding: 14px; border-radius: 14px; margin-top: 15px; font-weight: 600; display: none; cursor: pointer; }
-        .btn-preview { padding: 0 20px; background: #64748b; color: white; border: none; border-radius: 14px; cursor: pointer; font-weight: 600; font-size: 0.9rem; white-space: nowrap; }
+
+        /* 인증키 영역 디자인 조정 */
+        .admin-auth-area { margin-top: 25px; padding-top: 20px; border-top: 1px solid var(--border); }
 
         #overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; backdrop-filter: blur(4px); }
     </style>
@@ -127,10 +130,7 @@
         <div class="card" id="mainCard">
             <h2 id="viewTitle">새로운 여정 기록</h2>
             <div class="input-grid">
-                <div class="full">
-                    <label>날짜</label>
-                    <input type="date" id="trekDate">
-                </div>
+                <div class="full"><label>날짜</label><input type="date" id="trekDate"></div>
                 <div class="full"><label>몇 일차인가요?</label><input type="number" id="day" placeholder="예: 1"></div>
                 <div><label>출발지</label><input type="text" id="startPos" placeholder="출발 장소"></div>
                 <div><label>도착지</label><input type="text" id="endPos" placeholder="도착 장소"></div>
@@ -138,17 +138,10 @@
                 <div><label>소요 시간</label><input type="text" id="duration" placeholder="예: 8시간"></div>
                 <div><label>걸음 수</label><input type="number" id="steps" placeholder="0"></div>
                 <div><label>오늘 쓴 비용(원)</label><input type="number" id="cost" placeholder="0"></div>
+                <div class="full"><label>오늘의 사진 URL (구글 드라이브 공유 링크)</label><input type="text" id="photoUrl" placeholder="링크를 붙여넣으세요"></div>
                 
-                <div class="full">
-                    <label>오늘의 사진 URL (구글 드라이브 공유 링크)</label>
-                    <div style="display: flex; gap: 8px;">
-                        <input type="text" id="photoUrl" placeholder="링크를 붙여넣으세요">
-                        <button type="button" class="btn-preview" id="previewBtn">사진 뜨게 하기</button>
-                    </div>
-                </div>
-
                 <div id="photoArea" class="full">
-                    <h3>오늘의 한 장 미리보기</h3>
+                    <h3>오늘의 한 장</h3>
                     <div class="img-container">
                         <img id="displayImg" src="" alt="여정 사진">
                     </div>
@@ -157,7 +150,7 @@
                 <div class="full"><label>오늘의 메모</label><textarea id="memo" placeholder="어떤 일이 있었나요?"></textarea></div>
             </div>
 
-            <div style="margin-top: 30px; margin-bottom: 10px;">
+            <div class="full admin-auth-area">
                 <label>관리자 인증 키</label>
                 <input type="password" id="adminPw" placeholder="수정/삭제 시 필요합니다">
             </div>
@@ -188,12 +181,13 @@
     const logsRef = ref(db, 'trekking_logs');
     let currentKey = null;
 
-    // 요일 변환 함수
+    // 날짜를 "M월 D일 (요일)" 형식으로 변환하는 함수
     function formatDateString(dateStr) {
         if (!dateStr) return "";
-        const date = new Date(dateStr);
-        const days = ["일", "월", "화", "수", "목", "금", "토"];
-        return `${date.getMonth() + 1}월 ${date.getDate()}일 ${days[date.getDay()]}요일`;
+        const d = new Date(dateStr);
+        if (isNaN(d)) return dateStr;
+        const days = ['일', '월', '화', '수', '목', '금', '토'];
+        return `${d.getMonth() + 1}월 ${d.getDate()}일 (${days[d.getDay()]}요일)`;
     }
 
     // 구글 드라이브 링크를 이미지 직링크로 변환하는 함수
@@ -202,22 +196,10 @@
         const regExp = /\/file\/d\/([^\/]+)\//;
         const match = link.match(regExp);
         if (match && match[1]) {
-            // 구글 드라이브 이미지 미리보기용 공식 다이렉트 URL로 수정
-            return `https://drive.google.com/uc?export=view&id=${match[1]}`;
+            return `https://lh3.googleusercontent.com/u/0/d/$${match[1]}`;
         }
         return link;
     }
-
-    // 미리보기 버튼 이벤트
-    document.getElementById('previewBtn').onclick = () => {
-        const link = document.getElementById('photoUrl').value;
-        if (link) {
-            document.getElementById('displayImg').src = convertDriveLink(link);
-            document.getElementById('photoArea').style.display = "block";
-        } else {
-            alert("사진 URL을 먼저 입력해주세요.");
-        }
-    };
 
     window.toggleMenu = () => {
         if (window.innerWidth < 768) {
@@ -230,6 +212,10 @@
         currentKey = null;
         document.getElementById('viewTitle').innerText = "새로운 여정 기록";
         document.querySelectorAll('input, textarea').forEach(el => el.value = "");
+        
+        // 오늘 날짜를 기본값으로 세팅 (선택 사항)
+        document.getElementById('trekDate').value = new Date().toISOString().split('T')[0];
+
         document.getElementById('photoArea').style.display = "none";
         document.getElementById('submitBtn').innerText = "오늘 기록 저장하기";
         document.getElementById('deleteBtn').style.display = "none";
@@ -238,7 +224,7 @@
 
     window.saveData = () => {
         const payload = {
-            trekDate: document.getElementById('trekDate').value, // 추가된 날짜 데이터
+            date: document.getElementById('trekDate').value, // 날짜 추가
             day: document.getElementById('day').value,
             startPos: document.getElementById('startPos').value,
             endPos: document.getElementById('endPos').value,
@@ -258,7 +244,7 @@
             update(ref(db, `trekking_logs/${currentKey}`), payload)
                 .then(() => {
                     alert("수정 완료!");
-                    document.getElementById('adminPw').value = ""; // 성공 시 비밀번호 칸 비우기
+                    document.getElementById('adminPw').value = ""; // 수정 완료 후 비밀번호 칸 초기화
                 })
                 .catch((err) => alert("인증 키가 틀려 수정할 수 없습니다."));
         } else {
@@ -291,12 +277,15 @@
         if (data) {
             const sorted = Object.entries(data).sort((a, b) => b[1].day - a[1].day);
             sorted.forEach(([key, val]) => {
-                const dateDisplay = val.trekDate ? ` · ${formatDateString(val.trekDate)}` : "";
-                
                 const item = document.createElement('div');
                 item.className = 'menu-item';
+                const dateDisplay = val.date ? `<span class="date-text">${formatDateString(val.date)}</span>` : '';
+                
                 item.innerHTML = `
-                    <div class="day-text">여정 ${val.day}일차${dateDisplay}</div>
+                    <div class="day-text">
+                        <span>여정 ${val.day}일차</span>
+                        ${dateDisplay}
+                    </div>
                     <div class="route-text">${val.startPos || '출발'} → ${val.endPos || '도착'}</div>
                     <div class="dist-text">📏 ${val.distance || 0}km | 🕒 ${val.duration || '-'}</div>
                 `;
@@ -309,7 +298,7 @@
     function loadDetail(key, data) {
         currentKey = key;
         document.getElementById('viewTitle').innerText = `${data.day}일차 기록 수정`;
-        document.getElementById('trekDate').value = data.trekDate || ""; // 날짜 불러오기
+        document.getElementById('trekDate').value = data.date || ""; // 날짜 로드
         document.getElementById('day').value = data.day;
         document.getElementById('startPos').value = data.startPos;
         document.getElementById('endPos').value = data.endPos;
@@ -319,7 +308,9 @@
         document.getElementById('cost').value = data.cost;
         document.getElementById('photoUrl').value = data.photoUrl || "";
         document.getElementById('memo').value = data.memo;
-        document.getElementById('adminPw').value = ""; // 다른 항목 불러올 때 비밀번호 칸 비우기
+        
+        // 상세정보 불러올 때 비밀번호 칸은 항상 비워두기
+        document.getElementById('adminPw').value = "";
 
         // 사진 표시 처리
         const imgDisplay = document.getElementById('displayImg');
@@ -337,6 +328,9 @@
         toggleMenu(); 
         window.scrollTo({top: 0, behavior: 'smooth'});
     }
+
+    // 초기 실행 시 날짜 기본값 세팅을 위해 호출
+    window.onload = initForm;
 </script>
 </body>
 </html>
