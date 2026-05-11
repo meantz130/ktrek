@@ -193,11 +193,16 @@
     // 구글 드라이브 링크를 이미지 직링크로 변환하는 함수
     function convertDriveLink(link) {
         if (!link) return "";
-        const regExp = /\/file\/d\/([^\/]+)\//;
+        
+        // 구글 드라이브 링크에서 고유 ID만 추출
+        const regExp = /\/file\/d\/([a-zA-Z0-9_-]+)/;
         const match = link.match(regExp);
+        
         if (match && match[1]) {
-            return `https://lh3.googleusercontent.com/u/0/d/$${match[1]}`;
+            // <img> 태그에서 이미지를 띄울 수 있는 주소로 변환
+            return `https://drive.google.com/uc?export=view&id=${match[1]}`;
         }
+        
         return link;
     }
 
